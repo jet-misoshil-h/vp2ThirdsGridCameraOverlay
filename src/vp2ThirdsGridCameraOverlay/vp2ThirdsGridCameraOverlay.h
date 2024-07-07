@@ -5,7 +5,7 @@
 // All rights reserved.
 //
 // vp2ThirdsGridCameraOverlay
-// Repository: https://github.com/jet-misoshil-h/vp2ThirdsGirdRenderOverride
+// Repository: https://github.com/jet-misoshil-h/vp2ThirdsGridCameraOverlay
 // Author: jet_misoshil (jet-misoshil-h)
 //+
 #include <maya/MString.h>
