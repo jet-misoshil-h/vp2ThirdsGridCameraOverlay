@@ -20,7 +20,7 @@
 MStatus initializePlugin(MObject obj)
 {
 	MStatus status;
-	MFnPlugin plugin(obj, "Applibot, Inc", "1.0", "Any");
+	MFnPlugin plugin(obj, "jet_misoshil", "0.1.2a", "Any");
 
 	MHWRender::MRenderer* renderer = MHWRender::MRenderer::theRenderer();
 	if (renderer)
