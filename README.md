@@ -18,3 +18,9 @@ Load "vp2ThirdsGridCameraOverlay.mll" in the Plug-in Manager and change the rend
 # Feature
 * Display a ThirdsGrid HUD with the following FitResolution when using FIlmGate
 * ThirdsGrid HUD display in the Gate display
+
+## Fit Resolution Gate
+* kFillFilmFit
+* kHorizontalFilmFit
+* kVerticalFilmFit
+* kOverscanFilmFit

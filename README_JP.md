@@ -18,3 +18,9 @@ Documents/maya/2023/plug-ins/
 # Feature
 * FIlmGate利用時の以下のFitResolutionで3分割グリッドHUDを表示する
 * Gate表示の内状態の3分割グリッドHUD表示
+
+## Fit Resolution Gate
+* kFillFilmFit
+* kHorizontalFilmFit
+* kVerticalFilmFit
+* kOverscanFilmFit
