@@ -12,9 +12,7 @@
 #include <maya/MCommonRenderSettingsData.h>
 #include <maya/MRenderUtil.h>
 
-// For override creation we return a UI name so that it shows up in as a
-// renderer in the 3d viewport menus.
-// 
+
 vp2ThirdsGridCameraOverlay::vp2ThirdsGridCameraOverlay( const MString & name )
 : MRenderOverride( name )
 , mUIName("VP2 Thirds Grid Camera Overlay")
@@ -27,8 +25,7 @@ vp2ThirdsGridCameraOverlay::vp2ThirdsGridCameraOverlay( const MString & name )
 
 }
 
-// On destruction all operations are deleted.
-//
+
 vp2ThirdsGridCameraOverlay::~vp2ThirdsGridCameraOverlay()
 {
 	for (unsigned int i=0; i<3; i++)
@@ -41,20 +38,13 @@ vp2ThirdsGridCameraOverlay::~vp2ThirdsGridCameraOverlay()
 	}
 }
 	
-// Drawing uses all internal code so will support all draw APIs
-//
+
 MHWRender::DrawAPI vp2ThirdsGridCameraOverlay::supportedDrawAPIs() const
 {
 	return MHWRender::kAllDevices;
 }
 
-// Basic iterator methods which returns a list of operations in order
-// The operations are not executed at this time only queued for execution
-//
-// - startOperationIterator() : to start iterating
-// - renderOperation() : will be called to return the current operation
-// - nextRenderOperation() : when this returns false we've returned all operations
-//
+
 bool vp2ThirdsGridCameraOverlay::startOperationIterator()
 {
 	mCurrentOperation = 0;
@@ -74,8 +64,7 @@ vp2ThirdsGridCameraOverlay::renderOperation()
 	return NULL;
 }
 
-bool 
-vp2ThirdsGridCameraOverlay::nextRenderOperation()
+bool vp2ThirdsGridCameraOverlay::nextRenderOperation()
 {
 	mCurrentOperation++;
 	if (mCurrentOperation < 3)
@@ -85,16 +74,6 @@ vp2ThirdsGridCameraOverlay::nextRenderOperation()
 	return false;
 }
 
-//
-// On setup we make sure that we have created the appropriate operations
-// These will be returned via the iteration code above.
-//
-// The only thing that is required here is to create:
-//
-//	- One scene render operation to draw the scene.
-//	- One "stock" HUD render operation to draw the HUD over the scene
-//	- One "stock" presentation operation to be able to see the results in the viewport
-//
 MStatus vp2ThirdsGridCameraOverlay::setup( const MString & destination )
 {
 	MHWRender::MRenderer *theRenderer = MHWRender::MRenderer::theRenderer();
@@ -118,34 +97,24 @@ MStatus vp2ThirdsGridCameraOverlay::setup( const MString & destination )
 	return MStatus::kSuccess;
 }
 
-// On cleanup we just return for returning the list of operations for
-// the next render
-//
 MStatus vp2ThirdsGridCameraOverlay::cleanup()
 {
 	mCurrentOperation = -1;
 	return MStatus::kSuccess;
 }
-	
-// The only customization for the scene render (and hence derivation)
-// is to be able to set the background color.
-//
+
 simpleViewRenderSceneRender::simpleViewRenderSceneRender(const MString &name)
 : MSceneRender( name )
 {
 }
 
-//------------------------------------------------------------------------
-// Custom HUD operation
-//
+
 void viewRenderHUDOperation::addUIDrawables( MHWRender::MUIDrawManager& drawManager2D, const MHWRender::MFrameContext& frameContext )
 {
 	// Start draw UI
 	drawManager2D.beginDrawable();
 	// // Set font color
 	drawManager2D.setColor( MColor( 0.455f, 0.212f, 0.596f ) );
-	// // Set font size
-	// drawManager2D.setFontSize( MHWRender::MUIDrawManager::kSmallFontSize );
 
 	// Draw renderer name
 	int x=0, y=0, w=0, h=0;
@@ -191,10 +160,13 @@ void viewRenderHUDOperation::addUIDrawables( MHWRender::MUIDrawManager& drawMana
 	if (camera.isDisplayFilmGate())
 	{
 		const double aspect = camera.aspectRatio();
-		const double viewAspect = endV.x / endV.y;
+		double hfa = camera.horizontalFilmAperture();
+		double vfa = camera.verticalFilmAperture();
+		const double h_base_aspect = hfa / vfa;
 
-		// double hfa = camera.horizontalFilmAperture();
-		// double vfa = camera.verticalFilmAperture();
+		const double viewAspect = endV.x / endV.y;
+		double endAspect = 0.0;
+
 		// drawManager2D.text( MPoint(w*0.5f, h*0.81f), MString(std::to_string(viewAspect).c_str()), MHWRender::MUIDrawManager::kCenter );
 
 		const MFnCamera::FilmFit filmFit = camera.filmFit();
@@ -223,16 +195,18 @@ void viewRenderHUDOperation::addUIDrawables( MHWRender::MUIDrawManager& drawMana
 				break;
 			case MFnCamera::kOverscanFilmFit:
 				// Overscan
+				// Compare to aspect ratio of Horizontal and Vertical
 				if (viewAspect > aspect)
 				{
 					// Horizontal
-					endV = MPoint( endV.x, endV.x / aspect);
+					endV = MPoint( endV.y * h_base_aspect, endV.y);
 				}
 				else
 				{
 					// Vertical
-					endV = MPoint( endV.y * aspect, endV.y);
+					endV = MPoint( endV.x, endV.x / aspect);
 				}
+
 				break;
 			default:
 				drawManager2D.text( MPoint(w*0.5f, h*0.81f), MString("InValid Camera FilmFit"), MHWRender::MUIDrawManager::kCenter );
@@ -278,9 +252,6 @@ void viewRenderHUDOperation::updateThirdsLine(
 	drawManager2D.line2d( MPoint( ow, thirds.y+thirdsLength.y), MPoint( ew, thirds.y+thirdsLength.y) );
 }
 
-// Background color override. We get the current colors from the 
-// renderer and use them
-//
 MHWRender::MClearOperation &
 simpleViewRenderSceneRender::clearOperation()
 {
