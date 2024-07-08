@@ -12,9 +12,6 @@
 #include <maya/MViewport2Renderer.h>
 
 
-//
-// Simple override class derived from MRenderOverride
-//
 class vp2ThirdsGridCameraOverlay : public MHWRender::MRenderOverride
 {
 public:
@@ -36,7 +33,7 @@ public:
 	{
 		return mUIName;
 	}
-	
+
 protected:
 	// UI name 
 	MString mUIName;
@@ -49,10 +46,6 @@ protected:
 	int mCurrentOperation;
 };
 
-//
-// Simple scene operation override to allow for clear color
-// tracking.
-//
 class simpleViewRenderSceneRender : public MHWRender::MSceneRender
 {
 public:
@@ -60,9 +53,6 @@ public:
     MHWRender::MClearOperation & clearOperation() override;
 };
 
-//------------------------------------------------------------------------
-// Custom hud operation
-//
 class viewRenderHUDOperation : public MHWRender::MHUDRender
 {
 public:
