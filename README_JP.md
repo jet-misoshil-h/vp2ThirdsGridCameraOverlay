@@ -1,4 +1,4 @@
-# vp2ThirdsGirdCameraOverride
+# vp2ThirdsGridCameraOverlay
 このプラグインはMayaのビューポートに3分割グリッドHUDを表示します
 
 ## required Maya version

@@ -1,4 +1,4 @@
-# vp2ThirdsGirdCameraOverride
+# vp2ThirdsGridCameraOverlay
 Plug-in to display thirds grid in Maya viewport
 
 ## required Maya version
