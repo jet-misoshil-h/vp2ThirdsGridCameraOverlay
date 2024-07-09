@@ -221,6 +221,12 @@ void viewRenderHUDOperation::addUIDrawables( MHWRender::MUIDrawManager& drawMana
 		this->updateThirdsLine(
 			harfOrig.x, harfOrig.y, harfEnd.x, harfEnd.y, thirds, thirdsLength, drawManager2D);
 	}
+	else if (camera)
+	{
+		// if RenderSettings RsolutionGate is true
+		
+	
+	}
 	else
 	{
 		x = (int)origin.x;
