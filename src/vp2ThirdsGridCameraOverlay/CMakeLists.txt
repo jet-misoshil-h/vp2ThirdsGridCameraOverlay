@@ -8,6 +8,9 @@
 
 cmake_minimum_required(VERSION 3.13)
 
+# set env variable DEVKIT_LOCATION to the location of Maya devkit
+set(ENV{DEVKIT_LOCATION} C:/work/maya_devkit/devkitBase)
+
 # include the project setting file
 include($ENV{DEVKIT_LOCATION}/cmake/pluginEntry.cmake)
 

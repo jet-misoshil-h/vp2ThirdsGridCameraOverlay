@@ -164,7 +164,7 @@ void viewRenderHUDOperation::addUIDrawables( MHWRender::MUIDrawManager& drawMana
 		// if RenderSettings RsolutionGate is true
 		MStatus isVaildFitResolution = MStatus::kFailure;
 		this->drawResolutionGate(
-			camera, endV, center, thirds, thirdsLength, drawManager2D, &isVaildFitResolution
+			camera, oversacan, endV, center, thirds, thirdsLength, drawManager2D, &isVaildFitResolution
 		);
 		if (isVaildFitResolution == MStatus::kFailure)
 		{
@@ -264,7 +264,7 @@ void viewRenderHUDOperation::drawFilmGate(
 			else
 			{
 				// Vertical
-				endV = MPoint( endV.x, endV.x / aspect);
+				endV = MPoint( endV.x, endV.x / h_base_aspect);
 			}
 
 			break;
@@ -288,7 +288,7 @@ void viewRenderHUDOperation::drawFilmGate(
 }
 
 void viewRenderHUDOperation::drawResolutionGate(
-	const MFnCamera& camera,
+	const MFnCamera& camera, const double& oversacan,
 	MPoint& endV, MPoint& center, MPoint& thirds, MPoint& thirdsLength,
 	MHWRender::MUIDrawManager& drawManager2D, MStatus* status
 )
@@ -299,10 +299,20 @@ void viewRenderHUDOperation::drawResolutionGate(
 
 	const double pixelWidth = (double)data.width;
 	const double pixelHeight = (double)data.height;
-	const double aspect = pixelWidth / pixelWidth;
+	const double aspect = pixelWidth / pixelHeight;
 	const double h_base_aspect = pixelHeight / pixelWidth;
 
 	const double viewAspect = endV.x / endV.y;
+
+	drawManager2D.text( MPoint(endV.x*0.5f, endV.y*0.91f),
+				MString(std::to_string(viewAspect).c_str()),
+				MHWRender::MUIDrawManager::kCenter );
+	drawManager2D.text( MPoint(endV.x*0.5f, endV.y*0.81f),
+				MString(std::to_string(aspect).c_str()),
+				MHWRender::MUIDrawManager::kCenter );
+	drawManager2D.text( MPoint(endV.x*0.5f, endV.y*0.71f),
+				MString(std::to_string(h_base_aspect).c_str()),
+				MHWRender::MUIDrawManager::kCenter );
 
 	const MFnCamera::FilmFit filmFit = camera.filmFit();
 	switch (filmFit)
@@ -339,7 +349,7 @@ void viewRenderHUDOperation::drawResolutionGate(
 			else
 			{
 				// Vertical
-				endV = MPoint( endV.x * aspect, endV.x * h_base_aspect);
+				endV = MPoint( endV.x, endV.x * h_base_aspect);
 			}
 
 			break;
