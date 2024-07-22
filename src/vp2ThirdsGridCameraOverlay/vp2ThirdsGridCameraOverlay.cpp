@@ -11,6 +11,7 @@
 #include <maya/MFnCamera.h>
 #include <maya/MCommonRenderSettingsData.h>
 #include <maya/MRenderUtil.h>
+#include <maya/MPlug.h>
 
 
 vp2ThirdsGridCameraOverlay::vp2ThirdsGridCameraOverlay( const MString & name )
@@ -116,6 +117,9 @@ void viewRenderHUDOperation::addUIDrawables( MHWRender::MUIDrawManager& drawMana
 	// // Set font color
 	drawManager2D.setColor( MColor( 0.455f, 0.212f, 0.596f ) );
 
+	// Get current camera
+	MFnCamera camera( frameContext.getCurrentCameraPath() );
+
 	// Draw renderer name
 	int x=0, y=0, w=0, h=0;
 	frameContext.getViewportDimensions( x, y, w, h );
@@ -124,13 +128,6 @@ void viewRenderHUDOperation::addUIDrawables( MHWRender::MUIDrawManager& drawMana
 	// Draw lines
 	drawManager2D.setColor( MColor( 0.05f, 0.32f, 0.05f ) );
 
-	// TODO: Get camera aspect ratio
-	// Get image ratio
-	// MCommonRenderSettingsData data;
-	// MRenderUtil::getCommonRenderSettings(data);
-
-	// Get current camera
-	MFnCamera camera( frameContext.getCurrentCameraPath() );
 	MPoint thirdsLength, thirds;
 	MPoint origin, end, center, rOrigin, rEnd;
 
@@ -156,70 +153,44 @@ void viewRenderHUDOperation::addUIDrawables( MHWRender::MUIDrawManager& drawMana
 
 	MPoint endV = (end - origin);
 
-	// if filmgate is true
-	if (camera.isDisplayFilmGate())
+	// Get camera plugs
+	MFnDependencyNode fnDN;
+	fnDN.setObject( camera.object() );
+	
+	// Get displayResolution plug
+	MPlug drPlug = fnDN.findPlug(MString("displayResolution"), true);
+	// TODO: Get filmFit offset
+	// double filmFitOffset = camera.filmFitOffset();
+
+	// TODO: Get lensSqueezeRatio
+	// When using various gate masks, the aspect ratio changes depending on the “lensSqueezeRatio” parameter, which must be calculated in advance.
+	// const double lensSqueezeRatio = camera.lensSqueezeRatio();
+
+	if (drPlug.asBool())
 	{
-		const double aspect = camera.aspectRatio();
-		double hfa = camera.horizontalFilmAperture();
-		double vfa = camera.verticalFilmAperture();
-		const double h_base_aspect = hfa / vfa;
-
-		const double viewAspect = endV.x / endV.y;
-		double endAspect = 0.0;
-
-		// drawManager2D.text( MPoint(w*0.5f, h*0.81f), MString(std::to_string(viewAspect).c_str()), MHWRender::MUIDrawManager::kCenter );
-
-		const MFnCamera::FilmFit filmFit = camera.filmFit();
-		switch (filmFit)
+		// if RenderSettings RsolutionGate is true
+		MStatus isVaildFitResolution = MStatus::kFailure;
+		this->drawResolutionGate(
+			camera, endV, center, thirds, thirdsLength, drawManager2D, &isVaildFitResolution
+		);
+		if (isVaildFitResolution == MStatus::kFailure)
 		{
-			case MFnCamera::kFillFilmFit:
-				// Fill
-				if (viewAspect > aspect)
-				{
-					// Horizontal
-					endV = MPoint( endV.x, endV.x / aspect);
-				}
-				else
-				{
-					// Vertical
-					endV = MPoint( endV.y * aspect, endV.y);
-				}
-				break;
-			case MFnCamera::kHorizontalFilmFit:
-				// Horizontal
-				endV = MPoint( endV.x, endV.x / aspect);
-				break;
-			case MFnCamera::kVerticalFilmFit:
-				// Vertical
-				endV = MPoint( endV.y * aspect, endV.y);
-				break;
-			case MFnCamera::kOverscanFilmFit:
-				// Overscan
-				// Compare to aspect ratio of Horizontal and Vertical
-				if (viewAspect > aspect)
-				{
-					// Horizontal
-					endV = MPoint( endV.y * h_base_aspect, endV.y);
-				}
-				else
-				{
-					// Vertical
-					endV = MPoint( endV.x, endV.x / aspect);
-				}
-
-				break;
-			default:
-				drawManager2D.text( MPoint(w*0.5f, h*0.81f), MString("InValid Camera FilmFit"), MHWRender::MUIDrawManager::kCenter );
-				break;
+			drawManager2D.text( MPoint(w*0.5f, h*0.81f),
+				MString("InValid Camera ResolutionGate"), MHWRender::MUIDrawManager::kCenter );
 		}
-
-		const MPoint harfEnd = center + (endV / 2);
-		const MPoint harfOrig = center - (endV / 2);
-		thirdsLength = endV / 3;
-		thirds = harfOrig + thirdsLength;
-
-		this->updateThirdsLine(
-			harfOrig.x, harfOrig.y, harfEnd.x, harfEnd.y, thirds, thirdsLength, drawManager2D);
+	}
+	else if (camera.isDisplayFilmGate())
+	{
+		MStatus isVaildFitResolution = MStatus::kFailure;
+		// if camera filmgate is true
+		this->drawFilmGate(
+			camera, endV, center, thirds, thirdsLength, drawManager2D, &isVaildFitResolution
+		);
+		if (isVaildFitResolution == MStatus::kFailure)
+		{
+			drawManager2D.text( MPoint(w*0.5f, h*0.81f),
+				MString("InValid Camera FilmFit"), MHWRender::MUIDrawManager::kCenter );
+		}
 	}
 	else
 	{
@@ -250,6 +221,151 @@ void viewRenderHUDOperation::updateThirdsLine(
 	// Horizontal line
 	drawManager2D.line2d( MPoint( ow, thirds.y), MPoint( ew, thirds.y) );
 	drawManager2D.line2d( MPoint( ow, thirds.y+thirdsLength.y), MPoint( ew, thirds.y+thirdsLength.y) );
+}
+
+void viewRenderHUDOperation::drawFilmGate(
+	const MFnCamera& camera,
+	MPoint& endV, MPoint& center, MPoint& thirds, MPoint& thirdsLength,
+	MHWRender::MUIDrawManager& drawManager2D, MStatus* status
+)
+{
+	const double aspect = camera.aspectRatio();
+	const double hfa = camera.horizontalFilmAperture();
+	const double vfa = camera.verticalFilmAperture();
+	const double heightBaseAspect = hfa / vfa;
+
+	const double viewAspect = endV.x / endV.y;
+
+	const MFnCamera::FilmFit filmFit = camera.filmFit();
+	switch (filmFit)
+	{
+		case MFnCamera::kFillFilmFit:
+			// Fill
+			if (viewAspect > aspect)
+			{
+				// Horizontal
+				endV = MPoint( endV.x, endV.x / aspect);
+			}
+			else
+			{
+				// Vertical
+				endV = MPoint( endV.y * aspect, endV.y);
+			}
+			break;
+		case MFnCamera::kHorizontalFilmFit:
+			// Horizontal
+			endV = MPoint( endV.x, endV.x / aspect);
+			break;
+		case MFnCamera::kVerticalFilmFit:
+			// Vertical
+			endV = MPoint( endV.y * aspect, endV.y);
+			break;
+		case MFnCamera::kOverscanFilmFit:
+			// Overscan
+			// Compare to aspect ratio of Horizontal and Vertical
+			if (viewAspect > aspect)
+			{
+				// Horizontal
+				endV = MPoint( endV.y * heightBaseAspect, endV.y);
+			}
+			else
+			{
+				// Vertical
+				endV = MPoint( endV.x, endV.x / heightBaseAspect);
+			}
+
+			break;
+		default:
+			// Invalid
+			*status = MStatus::kFailure;
+			return;
+	}
+
+	MPoint harfEnd = center + (endV / 2);
+	MPoint harfOrig = center - (endV / 2);
+	thirdsLength = endV / 3;
+	thirds = harfOrig + thirdsLength;
+
+	this->updateThirdsLine(
+		(int)harfOrig.x, (int)harfOrig.y, (int)harfEnd.x, (int)harfEnd.y,
+		thirds, thirdsLength, drawManager2D
+	);
+
+	*status = MStatus::kSuccess;
+}
+
+void viewRenderHUDOperation::drawResolutionGate(
+	const MFnCamera& camera,
+	MPoint& endV, MPoint& center, MPoint& thirds, MPoint& thirdsLength,
+	MHWRender::MUIDrawManager& drawManager2D, MStatus* status
+)
+{	
+	// Get image ratio
+	MCommonRenderSettingsData data;
+	MRenderUtil::getCommonRenderSettings(data);
+
+	const double pixelWidth = (double)data.width;
+	const double pixelHeight = (double)data.height;
+	const double aspect = pixelWidth / pixelHeight;
+	const double heightBaseAspect = pixelHeight / pixelWidth;
+
+	const double viewAspect = endV.x / endV.y;
+
+	const MFnCamera::FilmFit filmFit = camera.filmFit();
+	switch (filmFit)
+	{
+		case MFnCamera::kFillFilmFit:
+			// Fill
+			if (viewAspect > aspect)
+			{
+				// Horizontal
+				endV = MPoint( endV.x, endV.x * heightBaseAspect);
+			}
+			else
+			{
+				// Vertical
+				endV = MPoint( endV.y / heightBaseAspect, endV.y);
+			}
+			break;
+		case MFnCamera::kHorizontalFilmFit:
+			// Horizontal
+			endV = MPoint( endV.x, endV.x * heightBaseAspect);
+			break;
+		case MFnCamera::kVerticalFilmFit:
+			// Vertical
+			endV = MPoint( endV.y / heightBaseAspect, endV.y);
+			break;
+		case MFnCamera::kOverscanFilmFit:
+			// Overscan
+			if (viewAspect > aspect)
+			{
+				// Horizontal
+				endV = MPoint( endV.y / heightBaseAspect, endV.y);
+			}
+			else
+			{
+				// Vertical
+				endV = MPoint( endV.x, endV.x * heightBaseAspect);
+			}
+
+			break;
+		default:
+			// Invalid
+			*status = MStatus::kFailure;
+			return;
+	}
+
+	const MPoint harfEnd = center + (endV / 2);
+	const MPoint harfOrig = center - (endV / 2);
+	thirdsLength = endV / 3;
+	thirds = harfOrig + thirdsLength;
+
+	this->updateThirdsLine(
+		(int)harfOrig.x, (int)harfOrig.y, (int)harfEnd.x, (int)harfEnd.y,
+		thirds, thirdsLength, drawManager2D
+	);
+
+	*status = MStatus::kSuccess;
 }
 
 MHWRender::MClearOperation &

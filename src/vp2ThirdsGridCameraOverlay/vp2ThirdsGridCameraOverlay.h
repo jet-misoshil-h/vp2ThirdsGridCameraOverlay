@@ -85,10 +85,6 @@ public:
 		mTargets = targets;
 	}
 
-	void updateThirdsLine(
-		int ow, int oh, int ew, int wh,
-		const MPoint& thirds, const MPoint& thirdsLength, MHWRender::MUIDrawManager& drawManager2D );
-
 	~viewRenderHUDOperation() override
 	{
 		mTargets = NULL;
@@ -96,6 +92,24 @@ public:
 
 protected:
 	MHWRender::MRenderTarget** mTargets;
+
+private:
+	void updateThirdsLine(
+		int ow, int oh, int ew, int wh,
+		const MPoint& thirds, const MPoint& thirdsLength, MHWRender::MUIDrawManager& drawManager2D );
+	
+	void drawFilmGate(
+		const MFnCamera& camera,
+		MPoint& endV, MPoint& center, MPoint& thirds, MPoint& thirdsLength,
+		MHWRender::MUIDrawManager& drawManager2D, MStatus* status
+	);
+
+	void drawResolutionGate(
+		const MFnCamera& camera,
+		MPoint& endV, MPoint& center, MPoint& thirds, MPoint& thirdsLength,
+		MHWRender::MUIDrawManager& drawManager2D, MStatus* status
+	);
 };
+
 
 #endif
