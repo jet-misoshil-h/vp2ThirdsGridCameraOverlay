@@ -16,9 +16,11 @@ Documents/maya/2023/plug-ins/
 
 # Usage
 1, Load “vp2ThirdsGridCameraOverlay.mll” in the Plug-in Manager.
+
 ![image01.png](/images/image01.png)
 
 2, Change the renderer to “VP2 Thirds Grid Camera Overlay” for the viewport to which you want to apply the ThirdsGridHUD.
+
 ![image02.png](/images/image02.png)
 
 # Feature
@@ -49,7 +51,7 @@ Known Issues
 > [!NOTE]
 > lensSqueezeRatio
 > The ratio of the gate mask area by this parameter is not supported.
-> > As usual, it is out of alignment.
+> As usual, it is out of alignment.
 
 > [!WARNING]
 > ResolutionGate
