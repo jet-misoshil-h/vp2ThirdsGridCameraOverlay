@@ -105,7 +105,7 @@ private:
 	);
 
 	void drawResolutionGate(
-		const MFnCamera& camera, const double& oversacan,
+		const MFnCamera& camera,
 		MPoint& endV, MPoint& center, MPoint& thirds, MPoint& thirdsLength,
 		MHWRender::MUIDrawManager& drawManager2D, MStatus* status
 	);

@@ -117,6 +117,9 @@ void viewRenderHUDOperation::addUIDrawables( MHWRender::MUIDrawManager& drawMana
 	// // Set font color
 	drawManager2D.setColor( MColor( 0.455f, 0.212f, 0.596f ) );
 
+	// Get current camera
+	MFnCamera camera( frameContext.getCurrentCameraPath() );
+
 	// Draw renderer name
 	int x=0, y=0, w=0, h=0;
 	frameContext.getViewportDimensions( x, y, w, h );
@@ -125,8 +128,6 @@ void viewRenderHUDOperation::addUIDrawables( MHWRender::MUIDrawManager& drawMana
 	// Draw lines
 	drawManager2D.setColor( MColor( 0.05f, 0.32f, 0.05f ) );
 
-	// Get current camera
-	MFnCamera camera( frameContext.getCurrentCameraPath() );
 	MPoint thirdsLength, thirds;
 	MPoint origin, end, center, rOrigin, rEnd;
 
@@ -153,18 +154,24 @@ void viewRenderHUDOperation::addUIDrawables( MHWRender::MUIDrawManager& drawMana
 	MPoint endV = (end - origin);
 
 	// Get camera plugs
-	MStatus asCameraObj = MStatus::kFailure;
-
 	MFnDependencyNode fnDN;
-	asCameraObj = fnDN.setObject( camera.object() );
-	MPlug drPlug = fnDN.findPlug(MString("displayResolution"), true, &asCameraObj);
+	fnDN.setObject( camera.object() );
+	
+	// Get displayResolution plug
+	MPlug drPlug = fnDN.findPlug(MString("displayResolution"), true);
+	// TODO: Get filmFit offset
+	// double filmFitOffset = camera.filmFitOffset();
 
-	if (asCameraObj == MStatus::kSuccess && drPlug.asBool())
+	// TODO: Get lensSqueezeRatio
+	// When using various gate masks, the aspect ratio changes depending on the “lensSqueezeRatio” parameter, which must be calculated in advance.
+	// const double lensSqueezeRatio = camera.lensSqueezeRatio();
+
+	if (drPlug.asBool())
 	{
 		// if RenderSettings RsolutionGate is true
 		MStatus isVaildFitResolution = MStatus::kFailure;
 		this->drawResolutionGate(
-			camera, oversacan, endV, center, thirds, thirdsLength, drawManager2D, &isVaildFitResolution
+			camera, endV, center, thirds, thirdsLength, drawManager2D, &isVaildFitResolution
 		);
 		if (isVaildFitResolution == MStatus::kFailure)
 		{
@@ -225,7 +232,7 @@ void viewRenderHUDOperation::drawFilmGate(
 	const double aspect = camera.aspectRatio();
 	const double hfa = camera.horizontalFilmAperture();
 	const double vfa = camera.verticalFilmAperture();
-	const double h_base_aspect = hfa / vfa;
+	const double heightBaseAspect = hfa / vfa;
 
 	const double viewAspect = endV.x / endV.y;
 
@@ -259,12 +266,12 @@ void viewRenderHUDOperation::drawFilmGate(
 			if (viewAspect > aspect)
 			{
 				// Horizontal
-				endV = MPoint( endV.y * h_base_aspect, endV.y);
+				endV = MPoint( endV.y * heightBaseAspect, endV.y);
 			}
 			else
 			{
 				// Vertical
-				endV = MPoint( endV.x, endV.x / h_base_aspect);
+				endV = MPoint( endV.x, endV.x / heightBaseAspect);
 			}
 
 			break;
@@ -274,8 +281,8 @@ void viewRenderHUDOperation::drawFilmGate(
 			return;
 	}
 
-	const MPoint harfEnd = center + (endV / 2);
-	const MPoint harfOrig = center - (endV / 2);
+	MPoint harfEnd = center + (endV / 2);
+	MPoint harfOrig = center - (endV / 2);
 	thirdsLength = endV / 3;
 	thirds = harfOrig + thirdsLength;
 
@@ -288,11 +295,11 @@ void viewRenderHUDOperation::drawFilmGate(
 }
 
 void viewRenderHUDOperation::drawResolutionGate(
-	const MFnCamera& camera, const double& oversacan,
+	const MFnCamera& camera,
 	MPoint& endV, MPoint& center, MPoint& thirds, MPoint& thirdsLength,
 	MHWRender::MUIDrawManager& drawManager2D, MStatus* status
 )
-{
+{	
 	// Get image ratio
 	MCommonRenderSettingsData data;
 	MRenderUtil::getCommonRenderSettings(data);
@@ -300,19 +307,9 @@ void viewRenderHUDOperation::drawResolutionGate(
 	const double pixelWidth = (double)data.width;
 	const double pixelHeight = (double)data.height;
 	const double aspect = pixelWidth / pixelHeight;
-	const double h_base_aspect = pixelHeight / pixelWidth;
+	const double heightBaseAspect = pixelHeight / pixelWidth;
 
 	const double viewAspect = endV.x / endV.y;
-
-	drawManager2D.text( MPoint(endV.x*0.5f, endV.y*0.91f),
-				MString(std::to_string(viewAspect).c_str()),
-				MHWRender::MUIDrawManager::kCenter );
-	drawManager2D.text( MPoint(endV.x*0.5f, endV.y*0.81f),
-				MString(std::to_string(aspect).c_str()),
-				MHWRender::MUIDrawManager::kCenter );
-	drawManager2D.text( MPoint(endV.x*0.5f, endV.y*0.71f),
-				MString(std::to_string(h_base_aspect).c_str()),
-				MHWRender::MUIDrawManager::kCenter );
 
 	const MFnCamera::FilmFit filmFit = camera.filmFit();
 	switch (filmFit)
@@ -322,34 +319,33 @@ void viewRenderHUDOperation::drawResolutionGate(
 			if (viewAspect > aspect)
 			{
 				// Horizontal
-				endV = MPoint( endV.x, endV.x * h_base_aspect);
+				endV = MPoint( endV.x, endV.x * heightBaseAspect);
 			}
 			else
 			{
 				// Vertical
-				endV = MPoint( endV.y / h_base_aspect, endV.y);
+				endV = MPoint( endV.y / heightBaseAspect, endV.y);
 			}
 			break;
 		case MFnCamera::kHorizontalFilmFit:
 			// Horizontal
-			endV = MPoint( endV.x, endV.x * h_base_aspect);
+			endV = MPoint( endV.x, endV.x * heightBaseAspect);
 			break;
 		case MFnCamera::kVerticalFilmFit:
 			// Vertical
-			endV = MPoint( endV.y / h_base_aspect, endV.y);
+			endV = MPoint( endV.y / heightBaseAspect, endV.y);
 			break;
 		case MFnCamera::kOverscanFilmFit:
 			// Overscan
-			// Compare to aspect ratio of Horizontal and Vertical
 			if (viewAspect > aspect)
 			{
 				// Horizontal
-				endV = MPoint( endV.y / h_base_aspect, endV.y);
+				endV = MPoint( endV.y / heightBaseAspect, endV.y);
 			}
 			else
 			{
 				// Vertical
-				endV = MPoint( endV.x, endV.x * h_base_aspect);
+				endV = MPoint( endV.x, endV.x * heightBaseAspect);
 			}
 
 			break;
