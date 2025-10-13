@@ -1,5 +1,4 @@
-#ifndef vp2ThirdsGridCameraOverlay_h_
-#define vp2ThirdsGridCameraOverlay_h_
+#pragma once
 //-
 // Copyright (c) 2024 jet-misoshil-h.
 // All rights reserved.
@@ -110,6 +109,3 @@ private:
 		MHWRender::MUIDrawManager& drawManager2D, MStatus* status
 	);
 };
-
-
-#endif

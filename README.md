@@ -4,9 +4,7 @@ Plug-in to display thirds grid in Maya viewport
 ![plaview](/images/cameraoverlay_02.gif)
 
 ## required Maya version
-Maya 2023
-
-Currently 2023 ONLY, but another version will be released soon!
+Maya 2023,2024,2025,2026
 
 # Install
 Store vp2ThirdsGridCameraOverlay.mll from the plug-ins folder to a folder that has a path that recognizes Maya's plug-ins.
@@ -34,11 +32,14 @@ Documents/maya/2023/plug-ins/
 ## v1.1.0
 * Display a 3-division grid HUD with the following FitResolution when using ResolutionGate
 
-## Fit Resolution Gate
+### Fit Resolution Gate
 * kFillFilmFit
 * kHorizontalFilmFit
 * kVerticalFilmFit
 * kOverscanFilmFit
+
+## v1.1.1
+* Supports Maya 2024 through 2026
 
 # Issue
 Known Issues
@@ -55,4 +56,4 @@ Known Issues
 
 > [!WARNING]
 > ResolutionGate
-> Fill and OverscanFilmFit settings slightly shift the trisection line
+> Depending on the user's pixel scaling setting, the three-way split lines may shift slightly in the Fill and Overscan Film Fit settings.
