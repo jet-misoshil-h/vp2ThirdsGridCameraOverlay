@@ -4,9 +4,7 @@
 ![plaview](/images/cameraoverlay_02.gif)
 
 ## required Maya version
-Maya 2023
-
-現在は2023オンリーですが、そのうち別のバージョンも公開予定です
+Maya 2023,2024,2025,2026
 
 # Install
 plug-insフォルダ以下よりvp2ThirdsGridCameraOverlay.mllをMayaのpluginを認識するパスが通っているフォルダ以下に格納する
@@ -34,11 +32,14 @@ Documents/maya/2023/plug-ins/
 ## v1.1.0
 * ResolutionGate利用時の以下のFitResolutionで3分割グリッドHUDを表示する
 
-## Fit Resolution Gate
+### Fit Resolution Gate
 * kFillFilmFit
 * kHorizontalFilmFit
 * kVerticalFilmFit
 * kOverscanFilmFit
+
+## v1.1.1
+* Maya 2024-2026までに対応
 
 # Issue
 既知の問題
@@ -55,4 +56,4 @@ Documents/maya/2023/plug-ins/
 
 > [!WARNING]
 > ResolutionGate
-> Fillおよび、OverscanFilmFit設定では微妙に3分割線がずれます
+> ユーザーのピクセル倍率設定によってはFillおよび、OverscanFilmFit設定では微妙に3分割線がずれます
