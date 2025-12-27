@@ -7,8 +7,6 @@
 // Author: jet_misoshil (jet-misoshil-h)
 //+
 
-#include <stdio.h>
-
 #include <maya/MString.h>
 #include <maya/MFnPlugin.h>
 #include <maya/MViewport2Renderer.h>
