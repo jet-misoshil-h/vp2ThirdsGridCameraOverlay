@@ -10,102 +10,99 @@
 #include <maya/MString.h>
 #include <maya/MViewport2Renderer.h>
 
-
 class vp2ThirdsGridCameraOverlay : public MHWRender::MRenderOverride
 {
 public:
-	vp2ThirdsGridCameraOverlay( const MString & name );
-	~vp2ThirdsGridCameraOverlay() override;
-	MHWRender::DrawAPI supportedDrawAPIs() const override;
+    vp2ThirdsGridCameraOverlay(const MString &name);
+    ~vp2ThirdsGridCameraOverlay() override;
+    MHWRender::DrawAPI supportedDrawAPIs() const override;
 
-	// Basic setup and cleanup
-	MStatus setup( const MString & destination ) override;
-	MStatus cleanup() override;
+    // Basic setup and cleanup
+    MStatus setup(const MString &destination) override;
+    MStatus cleanup() override;
 
-	// Operation iteration methods
-	bool startOperationIterator() override;
-	MHWRender::MRenderOperation * renderOperation() override;
-	bool nextRenderOperation() override;
+    // Operation iteration methods
+    bool startOperationIterator() override;
+    MHWRender::MRenderOperation *renderOperation() override;
+    bool nextRenderOperation() override;
 
-	// UI name
-	MString uiName() const override
-	{
-		return mUIName;
-	}
+    // UI name
+    MString uiName() const override
+    {
+        return mUIName;
+    }
 
 protected:
-	// UI name 
-	MString mUIName;
+    // UI name
+    MString mUIName;
 
-	// Operations and operation names
-	MHWRender::MRenderOperation* mOperations[3];
-	MString mOperationNames[3];
+    // Operations and operation names
+    MHWRender::MRenderOperation *mOperations[3];
+    MString mOperationNames[3];
 
-	// Temporary of operation iteration
-	int mCurrentOperation;
+    // Temporary of operation iteration
+    int mCurrentOperation;
 };
 
 class simpleViewRenderSceneRender : public MHWRender::MSceneRender
 {
 public:
     simpleViewRenderSceneRender(const MString &name);
-    MHWRender::MClearOperation & clearOperation() override;
+    MHWRender::MClearOperation &clearOperation() override;
 };
 
 class viewRenderHUDOperation : public MHWRender::MHUDRender
 {
 public:
-	viewRenderHUDOperation()
-	{
-		mTargets = NULL;
-	}
+    viewRenderHUDOperation()
+    {
+        mTargets = NULL;
+    }
 
-	// Target override
-	MHWRender::MRenderTarget* const* targetOverrideList(unsigned int &listSize) override
-	{
-		if (mTargets)
-		{
-			listSize = 2;
-			return &mTargets[0];
-		}
-		listSize = 0;
-		return NULL;
-	}
+    // Target override
+    MHWRender::MRenderTarget *const *targetOverrideList(unsigned int &listSize) override
+    {
+        if (mTargets)
+        {
+            listSize = 2;
+            return &mTargets[0];
+        }
+        listSize = 0;
+        return NULL;
+    }
 
-	bool hasUIDrawables() const override
-	{
-		return true;
-	}
+    bool hasUIDrawables() const override
+    {
+        return true;
+    }
 
-	void addUIDrawables( MHWRender::MUIDrawManager& drawManager2D, const MHWRender::MFrameContext& frameContext ) override;
+    void addUIDrawables(MHWRender::MUIDrawManager &drawManager2D, const MHWRender::MFrameContext &frameContext) override;
 
-	void setRenderTargets(MHWRender::MRenderTarget **targets)
-	{
-		mTargets = targets;
-	}
+    void setRenderTargets(MHWRender::MRenderTarget **targets)
+    {
+        mTargets = targets;
+    }
 
-	~viewRenderHUDOperation() override
-	{
-		mTargets = NULL;
-	}
+    ~viewRenderHUDOperation() override
+    {
+        mTargets = NULL;
+    }
 
 protected:
-	MHWRender::MRenderTarget** mTargets;
+    MHWRender::MRenderTarget **mTargets;
 
 private:
-	void updateThirdsLine(
-		int ow, int oh, int ew, int wh,
-		const MPoint& thirds, const MPoint& thirdsLength, MHWRender::MUIDrawManager& drawManager2D );
-	
-	void drawFilmGate(
-		const MFnCamera& camera,
-		MPoint& endV, MPoint& center, MPoint& thirds, MPoint& thirdsLength,
-		MHWRender::MUIDrawManager& drawManager2D, MStatus* status
-	);
+    void updateThirdsLine(
+        int ow, int oh, int ew, int wh,
+        const MPoint &thirds, const MPoint &thirdsLength, MHWRender::MUIDrawManager &drawManager2D);
 
-	void drawResolutionGate(
-		const MFnCamera& camera,
-		MPoint& endV, MPoint& center, MPoint& thirds, MPoint& thirdsLength,
-		MHWRender::MUIDrawManager& drawManager2D, MStatus* status
-	);
+    void drawFilmGate(
+        const MFnCamera &camera,
+        MPoint &endV, MPoint &center, MPoint &thirds, MPoint &thirdsLength,
+        MHWRender::MUIDrawManager &drawManager2D, MStatus *status);
+
+    void drawResolutionGate(
+        const MFnCamera &camera,
+        MPoint &endV, MPoint &center, MPoint &thirds, MPoint &thirdsLength,
+        MHWRender::MUIDrawManager &drawManager2D, MStatus *status);
 };
