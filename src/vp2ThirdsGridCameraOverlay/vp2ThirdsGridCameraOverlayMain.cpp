@@ -17,20 +17,20 @@
 //
 MStatus initializePlugin(MObject obj)
 {
-	MStatus status;
-	MFnPlugin plugin(obj, "jet_misoshil", "1.1.1", "Any");
+    MStatus status;
+    MFnPlugin plugin(obj, "jet_misoshil", "1.1.1", "Any");
 
-	MHWRender::MRenderer* renderer = MHWRender::MRenderer::theRenderer();
-	if (renderer)
-	{
-		// We register with a given name
-		vp2ThirdsGridCameraOverlay *overridePtr = new vp2ThirdsGridCameraOverlay("vp2ThirdsGridCameraOverlay");
-		if (overridePtr)
-		{
-			renderer->registerOverride(overridePtr);
-		}
-	}
-	return status;
+    MHWRender::MRenderer* renderer = MHWRender::MRenderer::theRenderer();
+    if (renderer)
+    {
+        // We register with a given name
+        vp2ThirdsGridCameraOverlay *overridePtr = new vp2ThirdsGridCameraOverlay("vp2ThirdsGridCameraOverlay");
+        if (overridePtr)
+        {
+            renderer->registerOverride(overridePtr);
+        }
+    }
+    return status;
 }
 
 //
@@ -38,20 +38,20 @@ MStatus initializePlugin(MObject obj)
 //
 MStatus uninitializePlugin(MObject obj)
 {
-	MStatus status;
-	MFnPlugin plugin(obj);
+    MStatus status;
+    MFnPlugin plugin(obj);
 
-	MHWRender::MRenderer* renderer = MHWRender::MRenderer::theRenderer();
-	if (renderer)
-	{
-		// Find override with the given name and deregister
-		const MHWRender::MRenderOverride* overridePtr = renderer->findRenderOverride("vp2ThirdsGridCameraOverlay");
-		if (overridePtr)
-		{
-			renderer->deregisterOverride( overridePtr );
-			delete overridePtr;
-		}
-	}
+    MHWRender::MRenderer* renderer = MHWRender::MRenderer::theRenderer();
+    if (renderer)
+    {
+        // Find override with the given name and deregister
+        const MHWRender::MRenderOverride* overridePtr = renderer->findRenderOverride("vp2ThirdsGridCameraOverlay");
+        if (overridePtr)
+        {
+            renderer->deregisterOverride( overridePtr );
+            delete overridePtr;
+        }
+    }
 
-	return status;
+    return status;
 }
